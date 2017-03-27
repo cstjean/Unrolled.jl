@@ -51,8 +51,9 @@ macro unroll(fundef)
             "`@unroll` must precede a function definition")
     arg_vars = map(function_argument_name, args)
     kwarg_vars = map(function_argument_name, kwargs)
+    all_args = [arg_vars; kwarg_vars]
     function seq_type(seq_var)
-        @assert(seq_var in [arg_vars; kwarg_vars],
+        @assert(seq_var in all_args,
                 "Can only unroll a loop over one of the function's arguments")
         return Expr(:($), seq_var)
     end
@@ -76,11 +77,11 @@ macro unroll(fundef)
     exp_fun = Symbol(fname, :_unrolled_expansion_)
     return esc(quote
         # The expansion function (for easy calling)
-        function $exp_fun($(args...); $(kwargs...))
+        function $exp_fun($(all_args...))
             $(Expr(:quote, expansion))
         end
         @generated function $fname($(args...); $(kwargs...))
-            $exp_fun($(args...); $(kwargs...))
+            $exp_fun($(all_args...))
         end
         $Unrolled.expansion_funs[$fname] = $exp_fun
     end)

@@ -8,8 +8,14 @@ using MacroTools
          (function foo(args__; kwargs__) end))
 @test map(Unrolled.function_argument_name, vcat(args, kwargs)) == [:a, :b, :c, :d]
 
-# write your own tests here
 @unroll function my_sum(ss)
+    total = zero(eltype(ss))
+    @unroll for x in ss
+        total += x
+    end
+    return total
+end
+@unroll function my_sum(; ss::Tuple=1)  # test kwargs
     total = zero(eltype(ss))
     @unroll for x in ss
         total += x
@@ -20,6 +26,7 @@ end
 @test my_sum((1,2,3)) == 6
 @test my_sum([1,2,3]) == 6
 @test my_sum(SVector(1,2,3)) == 6
+@test my_sum(; ss=(1,2,3)) == 6
 
 @test_throws AssertionError @eval @unroll function my_sum(ss)
     total = zero(eltype(ss))
