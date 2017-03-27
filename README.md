@@ -23,6 +23,7 @@ julia> @unroll function my_sum(seq)
 my_sum_unrolled_expansion_ (generic function with 1 method)
 
 julia> my_sum((1, 2, 3))
+6
 ```
 
 To see what code will be executed,
@@ -63,9 +64,8 @@ vectors from [StaticArrays.jl](https://github.com/JuliaArrays/StaticArrays.jl) a
 
 ## Usage
 
-`@unroll` works by generating a separate function for each type (this may sound expensive,
-but it's what Julia does all the time anyway). This is why we need (at least) two
-`@unroll`:
+`@unroll` works by generating (at compile-time) a separate function for each type
+combination. This is why we need (at least) two `@unroll`:
  - One in front of the `function` definition
  - One in front of each `for` loop to be unrolled
 
@@ -95,9 +95,7 @@ An easy work-around is to use a helper function
 end
 
 # Sum every number in seq except the last one
-function my_sum_but_last(seq)
-    return _do_sum(seq[1:end-1])
-end
+my_sum_but_last(seq) = _do_sum(seq[1:end-1])
 
 my_sum_but_last((1,20,3))    # 21
 ```
