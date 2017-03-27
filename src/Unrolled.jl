@@ -26,11 +26,20 @@ type_length{T<:Tuple}(tup::Type{T}) = length(tup.parameters)
 # Default fall-back
 type_length(typ::Type) = length(typ)
 
-# Convenience for getting the function arguments
-get_arg(arg::Symbol) = arg
-function get_arg(expr::Expr)
-    @assert @capture(expr, (arg_::atype_=val_) | (arg_=val_) | (arg_::atype_))
-    return arg
+""" `function_argument_name(arg_expr)`
+
+Returns the name (as a symbol) of this argument, where arg_expr is whatever can
+be put in a function definition's argument list (eg. `len::Int=5`) """
+function function_argument_name(arg_expr)
+    if isa(arg_expr, Expr) && arg_expr.head == :kw
+        name = arg_expr.args[1]
+    elseif @capture(arg_expr, name_::type_)
+        name
+    else
+        name = arg_expr
+    end
+    @assert isa(name, Symbol)
+    name
 end
 
 macro unroll(fundef)
@@ -38,7 +47,7 @@ macro unroll(fundef)
     @assert(@capture(fundef, function fname_(args__) body__ end),
             "`@unroll` must precede a function definition")
     function seq_type(seq_var)
-        @assert(any([get_arg(arg) == seq_var for arg in args]),
+        @assert(any([function_argument_name(arg) == seq_var for arg in args]),
                 "Can only unroll a loop over one of the function's arguments")
         return Expr(:($), seq_var)
     end
