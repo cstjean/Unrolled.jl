@@ -10,49 +10,51 @@ Unrolled.jl provides a macro to unroll loops where the type-length is known at
 compile-time. This can significantly improve performance and type-stability. For example, 
 
 ```julia
-# More on why we need @unroll twice later.
-@unroll function my_sum(seq)
-    total = zero(eltype(seq))
-    @unroll for x in seq
-        total += x
-    end
-    return total
-end
+julia> using Unrolled
 
-foo((1, 2, 3))
-> 6
+julia> @unroll function my_sum(seq)
+       	   # More on why we need @unroll twice later.
+	   total = zero(eltype(seq))
+           @unroll for x in seq
+               total += x
+           end
+           return total
+       end
+my_sum_unrolled_expansion_ (generic function with 1 method)
+
+julia> my_sum((1, 2, 3))
 ```
 
 To see what code will be executed,
 
 ```julia
 # Tuples are unrolled
-@code_unrolled my_sum((1,2,3))
-> quote  # ~/.julia/v0.6/Unrolled/src/Unrolled.jl, line 61:
->     total = zero(eltype(seq))
->     begin  # ~/.julia/v0.6/Unrolled/src/Unrolled.jl, line 22:
->         let x = seq[1] # ~/.julia/v0.6/Unrolled/src/Unrolled.jl, line 21:
->             total += x
->         end
->         let x = seq[2] # ~/.julia/v0.6/Unrolled/src/Unrolled.jl, line 21:
->             total += x
->         end
->         let x = seq[3] # ~/.julia/v0.6/Unrolled/src/Unrolled.jl, line 21:
->             total += x
->         end
->     end
->     return total
-> end
+julia> @code_unrolled my_sum((1,2,3))
+quote  
+    total = zero(eltype(seq))
+    begin  
+        let x = seq[1]
+            total += x
+        end
+        let x = seq[2]
+            total += x
+        end
+        let x = seq[3]
+            total += x
+        end
+    end
+    return total
+end
 
 # But not vectors, since their length is not part of Vector{Int}
-@code_unrolled my_sum([1,2,3])
-> quote  # ~/.julia/v0.6/Unrolled/src/Unrolled.jl, line 61:
->     total = zero(eltype(seq))
->     for x = seq # ~/.julia/v0.6/Unrolled/src/Unrolled.jl, line 50:
->         total += x
->     end
->     return total
-> end
+julia> @code_unrolled my_sum([1,2,3])
+quote
+    total = zero(eltype(seq))
+    for x = seq
+        total += x
+    end
+    return total
+end
 ```
 
 All types for which `length` is implemented will be unrolled (this includes the fixed-size
@@ -97,6 +99,5 @@ function my_sum_but_last(seq)
     return _do_sum(seq[1:end-1])
 end
 
-my_sum_but_last((1,20,3))
-> 21
+my_sum_but_last((1,20,3))    # 21
 ```
