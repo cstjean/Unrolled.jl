@@ -8,6 +8,7 @@ export @unroll, @code_unrolled
 const expansion_funs = Dict{Function, Function}()
 
 macro unroll_loop(niter_type::Type, loop)
+    local niter   # necessary on 0.5
     @assert(@capture(loop, for var_ in seq_ loopbody__ end),
             "Internal error in @unroll_loop")
     try
@@ -32,13 +33,14 @@ Returns the name (as a symbol) of this argument, where arg_expr is whatever can
 be put in a function definition's argument list (eg. `len::Int=5`) """
 function function_argument_name(arg_expr)
     if isa(arg_expr, Expr) && arg_expr.head == :kw
-        name = arg_expr.args[1]
-    elseif @capture(arg_expr, name_::type_)
+        arg_expr = arg_expr.args[1]
+    end
+    if @capture(arg_expr, name_::type_)
         name
     else
         name = arg_expr
     end
-    @assert isa(name, Symbol)
+    @assert isa(name, Symbol) "Bad $name"
     name
 end
 

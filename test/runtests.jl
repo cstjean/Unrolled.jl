@@ -1,6 +1,12 @@
 using Unrolled
 using Base.Test
 using StaticArrays
+using MacroTools
+
+# Check that we can extract argument names
+@capture(:(function foo(a, b::Int, c=2; d::Int=4) end),
+         (function foo(args__; kwargs__) end))
+@test map(Unrolled.function_argument_name, vcat(args, kwargs)) == [:a, :b, :c, :d]
 
 # write your own tests here
 @unroll function my_sum(ss)
