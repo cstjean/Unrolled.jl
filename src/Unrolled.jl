@@ -3,7 +3,9 @@ module Unrolled
 using MacroTools
 using MacroTools: prewalk, postwalk
 
-export @unroll, @code_unrolled
+export @unroll, @code_unrolled, unrolled_filter
+
+function unrolled_filter end
 
 const expansion_funs = Dict{Function, Function}()
 
@@ -95,5 +97,11 @@ macro code_unrolled(expr)
         macroexpand($Unrolled.expansion_funs[$f](map(typeof, $ar)...))
     end)
 end
+
+function _unrolled_filter(f, tup)
+    :($([Expr(:(...), :(f(tup[$i]) ? (tup[$i],) : ()))
+         for i in 1:type_length(tup)]...),)
+end
+@generated unrolled_filter(f, tup::Tuple) = _unrolled_filter(f, tup)
 
 end # module
