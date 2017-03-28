@@ -3,7 +3,8 @@ module Unrolled
 using MacroTools
 using MacroTools: prewalk, postwalk
 
-export @unroll, @code_unrolled, unrolled_filter
+export @unroll, @code_unrolled
+export unrolled_filter, unrolled_intersect, unrolled_setdiff, unrolled_union
 
 function unrolled_filter end
 
@@ -103,5 +104,8 @@ function _unrolled_filter(f, tup)
          for i in 1:type_length(tup)]...),)
 end
 @generated unrolled_filter(f, tup::Tuple) = _unrolled_filter(f, tup)
+unrolled_intersect(tup1::Tuple, tup2::Tuple) = unrolled_filter(x->x in tup2, tup1)
+unrolled_setdiff(tup1::Tuple, tup2::Tuple) = unrolled_filter(!(x->x in tup2), tup1)
+unrolled_union(tup1::Tuple, tup2::Tuple) = (tup1..., unrolled_setdiff(tup2, tup1)...)
 
 end # module
