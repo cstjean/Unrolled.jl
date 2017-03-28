@@ -4,7 +4,8 @@ using MacroTools
 using MacroTools: prewalk, postwalk
 
 export @unroll, @code_unrolled
-export unrolled_filter, unrolled_intersect, unrolled_setdiff, unrolled_union
+export unrolled_reduce, unrolled_filter, unrolled_intersect, unrolled_setdiff,
+       unrolled_union
 
 function unrolled_filter end
 
@@ -99,6 +100,14 @@ macro code_unrolled(expr)
     end)
 end
 
+################################################################################
+
+@generated function unrolled_reduce(f, v0, seq) 
+    niter = type_length(seq)
+    expand(i) = i == 0 ? :v0 : :(f(seq[$i], $(expand(i-1))))
+    return expand(niter)
+end
+
 function _unrolled_filter(f, tup)
     :($([Expr(:(...), :(f(tup[$i]) ? (tup[$i],) : ()))
          for i in 1:type_length(tup)]...),)
@@ -106,6 +115,10 @@ end
 @generated unrolled_filter(f, tup::Tuple) = _unrolled_filter(f, tup)
 unrolled_intersect(tup1::Tuple, tup2::Tuple) = unrolled_filter(x->x in tup2, tup1)
 unrolled_setdiff(tup1::Tuple, tup2::Tuple) = unrolled_filter(!(x->x in tup2), tup1)
+unrolled_union() = ()
+unrolled_union(tup1::Tuple) = tup1
 unrolled_union(tup1::Tuple, tup2::Tuple) = (tup1..., unrolled_setdiff(tup2, tup1)...)
+unrolled_union(tup1::Tuple, tup2::Tuple, tupn::Tuple...) =
+    unrolled_reduce(unrolled_union, tup1, (tup2, tupn...))
 
 end # module

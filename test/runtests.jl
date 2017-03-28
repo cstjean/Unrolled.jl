@@ -55,7 +55,7 @@ end
 # Check that unrolled_union & co are correct and type-stable
 struct MyVal{T} end
 # Otherwise it's not type-stable. Perhaps it should defined in Base for all singleton
-# types
+# types.
 @generated Base.in(val::MyVal, tup::Tuple) = val in type_parameters(tup)
 
 @test (@inferred(unrolled_union((MyVal{1}(), MyVal{2}()), (MyVal{2}(), MyVal{0}()))) ==
@@ -64,3 +64,7 @@ struct MyVal{T} end
        (MyVal{2}(),))
 @test (@inferred(unrolled_setdiff((MyVal{1}(), MyVal{2}()), (MyVal{2}(), MyVal{0}()))) ==
        (MyVal{1}(),))
+@test (@inferred(unrolled_union((MyVal{1}(), MyVal{2}()),
+                                (MyVal{2}(), MyVal{0}()),
+                                (MyVal{10}(),))) ==
+       (MyVal{10}(), MyVal{2}(), MyVal{0}(), MyVal{1}()))
