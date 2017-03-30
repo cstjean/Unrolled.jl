@@ -5,7 +5,7 @@ using MacroTools: prewalk, postwalk
 
 export @unroll, @code_unrolled
 export unrolled_reduce, unrolled_filter, unrolled_intersect, unrolled_setdiff,
-       unrolled_union, unrolled_in
+       unrolled_union, unrolled_in, unrolled_any, unrolled_all
 
 function unrolled_filter end
 
@@ -123,6 +123,24 @@ unrolled_union(tup1::Tuple, tup2::Tuple, tupn::Tuple...) =
 @unroll function unrolled_in(obj, tup::Tuple)
     @unroll for x in tup
         if obj == x
+            return true
+        end
+    end
+    return false
+end
+
+@unroll function unrolled_all(f, tup::Tuple)
+    @unroll for x in tup
+        if !f(x)
+            return false
+        end
+    end
+    return true
+end
+
+@unroll function unrolled_any(f, tup::Tuple)
+    @unroll for x in tup
+        if f(x)
             return true
         end
     end
