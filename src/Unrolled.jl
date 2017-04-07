@@ -26,6 +26,11 @@ macro unroll_loop(niter_type::Type, loop)
     exprs = [:(let $var = $seq[$i]; $(loopbody...) end) for i in 1:niter]
     return esc(quote $(exprs...) end)
 end
+macro unroll_loop(niter::Int, loop)
+    @assert(@capture(loop, for var_ in seq_ loopbody__ end),
+            "Internal error in @unroll_loop")
+    esc(quote $([:(let $var = $seq[$i]; $(loopbody...) end) for i in 1:niter]...) end)
+end
 
 type_length{T<:Tuple}(tup::Type{T}) = length(tup.parameters)
 # Default fall-back
@@ -132,6 +137,11 @@ unrolled_union(tup1::Tuple, tup2::Tuple, tupn::Tuple...) =
     end
     return false
 end
+# Fails because generated functions cannot generate closures
+# @generated function unrolled_in_fn(tup::Tuple)
+#     # Written in part because of #21322
+#     :(obj -> |($((:(obj == tup[$i]) for i in 1:type_length(tup))...)))
+# end
 
 @unroll function unrolled_all(f, tup::Tuple)
     @unroll for x in tup
