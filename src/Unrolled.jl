@@ -5,7 +5,7 @@ using MacroTools: prewalk, postwalk
 
 export @unroll, @code_unrolled
 export unrolled_reduce, unrolled_filter, unrolled_intersect, unrolled_setdiff,
-       unrolled_union, unrolled_in, unrolled_any, unrolled_all
+       unrolled_union, unrolled_in, unrolled_any, unrolled_all, unrolled_map
 
 function unrolled_filter end
 
@@ -101,6 +101,10 @@ macro code_unrolled(expr)
 end
 
 ################################################################################
+
+@generated function unrolled_map(f, seq::Tuple) 
+    :(tuple($((:(f(seq[$i])) for i in 1:type_length(seq))...)))
+end
 
 @generated function unrolled_reduce(f, v0, seq) 
     niter = type_length(seq)

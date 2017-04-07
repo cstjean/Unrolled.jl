@@ -68,3 +68,4 @@ struct MyVal{T} end
                                 (MyVal{2}(), MyVal{0}()),
                                 (MyVal{10}(),))) ==
        (MyVal{10}(), MyVal{2}(), MyVal{0}(), MyVal{1}()))
+@test @inferred(unrolled_reduce((+), 0, unrolled_map(abs, (1,2,-3,7)))) == 13
