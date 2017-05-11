@@ -53,7 +53,7 @@ end
 @test my_sum_but_last((1,20,3)) == 21
 
 # Check that unrolled_union & co are correct and type-stable
-struct MyVal{T} end
+immutable MyVal{T} end
 # Otherwise it's not type-stable. Perhaps it should defined in Base for all singleton
 # types.
 @generated Base.in(val::MyVal, tup::Tuple) = val in type_parameters(tup)
