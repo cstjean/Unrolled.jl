@@ -1,3 +1,4 @@
+__precompile__()
 module Unrolled
 
 using MacroTools
@@ -86,7 +87,7 @@ macro unroll(fundef)
     exp_fun = Symbol(fname, :_unrolled_expansion_)
     return esc(quote
         # The expansion function (for easy calling)
-        function $exp_fun($(all_args...))
+        Base.@__doc__ function $exp_fun($(all_args...))
             $(Expr(:quote, expansion))
         end
         @generated function $fname($(args...); $(kwargs...))
@@ -110,6 +111,10 @@ end
 @generated function unrolled_map(f, seq::Tuple) 
     :(tuple($((:(f(seq[$i])) for i in 1:type_length(seq))...)))
 end
+@generated function unrolled_map(f, seq1::Tuple, seq2::Tuple)
+    @assert type_length(seq1) == type_length(seq2)
+    :(tuple($((:(f(seq1[$i], seq2[$i])) for i in 1:type_length(seq1))...)))
+end
 
 @generated function unrolled_reduce(f, v0, seq) 
     niter = type_length(seq)
@@ -129,6 +134,8 @@ unrolled_union(tup1::Tuple) = tup1
 unrolled_union(tup1::Tuple, tup2::Tuple) = (tup1..., unrolled_setdiff(tup2, tup1)...)
 unrolled_union(tup1::Tuple, tup2::Tuple, tupn::Tuple...) =
     unrolled_reduce(unrolled_union, tup1, (tup2, tupn...))
+""" `unrolled_in(obj, tup::Tuple)` is like `in`. Beware that its return type is not
+always known - see #21322 """
 @unroll function unrolled_in(obj, tup::Tuple)
     @unroll for x in tup
         if obj == x
@@ -137,11 +144,6 @@ unrolled_union(tup1::Tuple, tup2::Tuple, tupn::Tuple...) =
     end
     return false
 end
-# Fails because generated functions cannot generate closures
-# @generated function unrolled_in_fn(tup::Tuple)
-#     # Written in part because of #21322
-#     :(obj -> |($((:(obj == tup[$i]) for i in 1:type_length(tup))...)))
-# end
 
 @unroll function unrolled_all(f, tup::Tuple)
     @unroll for x in tup

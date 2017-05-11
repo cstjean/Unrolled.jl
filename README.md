@@ -6,8 +6,10 @@
 
 [![codecov.io](http://codecov.io/github/cstjean/Unrolled.jl/coverage.svg?branch=master)](http://codecov.io/github/cstjean/Unrolled.jl?branch=master)
 
-Unrolled.jl provides a macro to unroll loops where the type-length is known at
-compile-time. This can significantly improve performance and type-stability. For example, 
+Unrolled.jl provides functions to unroll loops on sequences whose length is known at
+compile-time (mostly `Tuple` and [`StaticArrays`](https://github.com/JuliaArrays/StaticArrays.jl)). This can significantly improve performance and type-stability.
+
+# The `@unroll` macro
 
 ```julia
 julia> using Unrolled
@@ -99,3 +101,27 @@ my_sum_but_last(seq) = _do_sum(seq[1:end-1])
 
 my_sum_but_last((1,20,3))    # 21
 ```
+
+# Unrolled functions
+
+Unrolled.jl also provides the following unrolled functions, defined on `Tuple`s only.
+
+```
+unrolled_map, unrolled_reduce, unrolled_filter, unrolled_intersect, 
+unrolled_union, unrolled_in, unrolled_any, unrolled_all, unrolled_setdiff
+```
+
+Most of these work best when the computations can be performed entirely at compile-time
+(using the types). In this example, `unrolled_filter` is compiled to a constant:
+
+```julia
+using Unrolled, Base.Test
+
+@generated positive{N}(::Val{N}) = N > 0
+@inferred unrolled_filter(positive, (Val{1}(), Val{3}(), Val{-1}(), Val{5}()))
+```
+
+# Note on `Val`
+
+In my experience, `Val` objects are more type-stable than `Val` types. Favor
+`Val{:x}()` over `Val{:x}`.
