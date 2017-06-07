@@ -9,6 +9,11 @@ export unrolled_reduce, unrolled_filter, unrolled_intersect, unrolled_setdiff,
        unrolled_union, unrolled_in, unrolled_any, unrolled_all, unrolled_map
 
 function unrolled_filter end
+""" `type_length(::Type)` returns the length of sequences of that type (only makes sense
+for sequence-like types, obviously. """
+function type_length end
+
+include("range.jl")
 
 const expansion_funs = Dict{Function, Function}()
 
