@@ -29,13 +29,19 @@ macro unroll_loop(niter_type::Type, loop)
             return esc(loop)
         else rethrow() end
     end
-    exprs = [:(let $var = $seq[$i]; $(loopbody...) end) for i in 1:niter]
-    return esc(quote $(exprs...) end)
+    esc(:($Unrolled.@unroll_loop $niter for $var in $seq
+          $(loopbody...) end))
 end
 macro unroll_loop(niter::Int, loop)
     @assert(@capture(loop, for var_ in seq_ loopbody__ end),
             "Internal error in @unroll_loop")
     esc(quote $([:(let $var = $seq[$i]; $(loopbody...) end) for i in 1:niter]...) end)
+end
+
+macro unroll_loop(loop::Expr)
+    @assert(@capture(loop, for var_ in 1:niter_ loopbody__ end),
+            "Internal error in @unroll_loop")
+    esc(quote $([:(let $var = $i; $(loopbody...) end) for i in 1:niter]...) end)
 end
 
 type_length{T<:Tuple}(tup::Type{T}) = length(tup.parameters)
@@ -72,9 +78,17 @@ macro unroll(fundef)
                 "Can only unroll a loop over one of the function's arguments")
         return Expr(:($), seq_var)
     end
+    function seq_type_length(seq_var)
+        @assert(seq_var in all_args,
+                "Can only unroll a loop over one of the function's arguments")
+        return Expr(:($), Expr(:call, :($Unrolled.type_length), seq_var))
+    end
     function process(expr)
         if @capture(expr, @unroll(what_))
             @match what begin
+                for var_ in 1:length(seq_) loopbody__ end =>
+                    :($Unrolled.@unroll_loop(for $var in 1:$(seq_type_length(seq));
+                                             $(loopbody...) end))
                 for var_ in seq_ loopbody__ end =>
                     :($Unrolled.@unroll_loop($(seq_type(seq)),
                                              for $var in $seq; $(loopbody...) end))

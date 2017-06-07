@@ -102,6 +102,20 @@ my_sum_but_last(seq) = _do_sum(seq[1:end-1])
 my_sum_but_last((1,20,3))    # 21
 ```
 
+As a special case, `@unroll` also supports iteration over `1:some_argument`
+
+```julia
+@unroll function foo(tup)
+    @unroll for x in 1:length(tup)
+        println(x)
+    end
+end
+foo((:a, :b, :c))
+> 1
+> 2
+> 3
+```
+
 # Unrolled functions
 
 Unrolled.jl also provides the following unrolled functions, defined on `Tuple`s only.
