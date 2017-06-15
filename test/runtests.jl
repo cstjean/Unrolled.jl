@@ -69,3 +69,10 @@ immutable MyVal{T} end
                                 (MyVal{10}(),))) ==
        (MyVal{10}(), MyVal{2}(), MyVal{0}(), MyVal{1}()))
 @test @inferred(unrolled_reduce((+), 0, unrolled_map(abs, (1,2,-3,7)))) == 13
+
+const tupl = (1,2,3,4,5.0,6,7...)
+@test @inferred(getindex(tupl, FixedRange{4, 5}())) == (4, 5.0)
+@test @inferred(getindex(tupl, FixedRange{4, FixedEnd{1}()}())) == (4, 5.0, 6)
+
+f(tupl) = @fixed_range(tupl[4:end-1])
+@test @inferred(f(tupl)) == (4, 5.0, 6)
