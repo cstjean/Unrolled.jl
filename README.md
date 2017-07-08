@@ -121,12 +121,20 @@ foo((:a, :b, :c))
 Unrolled.jl also provides the following unrolled functions, defined on `Tuple`s only.
 
 ```
-unrolled_map, unrolled_reduce, unrolled_filter, unrolled_intersect, 
-unrolled_union, unrolled_in, unrolled_any, unrolled_all, unrolled_setdiff
+unrolled_map, unrolled_reduce, unrolled_in, unrolled_any, unrolled_all
 ```
 
-Most of these work best when the computations can be performed entirely at compile-time
-(using the types). In this example, `unrolled_filter` is compiled to a constant:
+and
+
+```
+unrolled_filter, unrolled_intersect, unrolled_union, unrolled_setdiff
+```
+
+The functions in this second group will only perform well when the computations can be
+performed entirely at compile-time (using the types). For example,
+`unrolled_filter(x->isa(x, Int), some_tuple)`.
+
+In this other example, `unrolled_filter` is compiled to a constant:
 
 ```julia
 using Unrolled, Base.Test
