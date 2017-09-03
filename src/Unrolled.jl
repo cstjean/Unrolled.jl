@@ -127,10 +127,10 @@ end
 
 ################################################################################
 
-@generated function unrolled_map(f, seq::Tuple) 
+@generated function unrolled_map(f, seq) 
     :(tuple($((:(f(seq[$i])) for i in 1:type_length(seq))...)))
 end
-@generated function unrolled_map(f, seq1::Tuple, seq2::Tuple)
+@generated function unrolled_map(f, seq1, seq2)
     @assert type_length(seq1) == type_length(seq2)
     :(tuple($((:(f(seq1[$i], seq2[$i])) for i in 1:type_length(seq1))...)))
 end
@@ -145,17 +145,17 @@ function _unrolled_filter(f, tup)
     :($([Expr(:(...), :(f(tup[$i]) ? (tup[$i],) : ()))
          for i in 1:type_length(tup)]...),)
 end
-@generated unrolled_filter(f, tup::Tuple) = _unrolled_filter(f, tup)
-unrolled_intersect(tup1::Tuple, tup2::Tuple) = unrolled_filter(x->x in tup2, tup1)
-unrolled_setdiff(tup1::Tuple, tup2::Tuple) = unrolled_filter(!(x->x in tup2), tup1)
+@generated unrolled_filter(f, tup) = _unrolled_filter(f, tup)
+unrolled_intersect(tup1, tup2) = unrolled_filter(x->x in tup2, tup1)
+unrolled_setdiff(tup1, tup2) = unrolled_filter(!(x->x in tup2), tup1)
 unrolled_union() = ()
-unrolled_union(tup1::Tuple) = tup1
-unrolled_union(tup1::Tuple, tup2::Tuple) = (tup1..., unrolled_setdiff(tup2, tup1)...)
-unrolled_union(tup1::Tuple, tup2::Tuple, tupn::Tuple...) =
+unrolled_union(tup1) = tup1
+unrolled_union(tup1, tup2) = (tup1..., unrolled_setdiff(tup2, tup1)...)
+unrolled_union(tup1, tup2, tupn...) =
     unrolled_reduce(unrolled_union, tup1, (tup2, tupn...))
-""" `unrolled_in(obj, tup::Tuple)` is like `in`. Beware that its return type is not
+""" `unrolled_in(obj, tup)` is like `in`. Beware that its return type is not
 always known - see #21322 """
-@unroll function unrolled_in(obj, tup::Tuple)
+@unroll function unrolled_in(obj, tup)
     @unroll for x in tup
         if obj == x
             return true
@@ -164,7 +164,7 @@ always known - see #21322 """
     return false
 end
 
-@unroll function unrolled_all(f, tup::Tuple)
+@unroll function unrolled_all(f, tup)
     @unroll for x in tup
         if !f(x)
             return false
@@ -173,7 +173,7 @@ end
     return true
 end
 
-@unroll function unrolled_any(f, tup::Tuple)
+@unroll function unrolled_any(f, tup)
     @unroll for x in tup
         if f(x)
             return true
