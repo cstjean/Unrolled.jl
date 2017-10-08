@@ -67,9 +67,11 @@ end
 
 macro unroll(fundef)
     # This macro will turn the function definition into a generated function.
-    @assert(@capture(fundef, function fname_(args__; kwargs__) body__ end) ||
-            (@capture(fundef, function fname_(args__) body__ end) && (kwargs = []; true)),
-            "`@unroll` must precede a function definition")
+    di = splitdef(fundef)
+    fname = di[:name]
+    args = di[:args]
+    kwargs = get(di, :kwargs, [])
+    body = di[:body]
     arg_vars = map(function_argument_name, args)
     kwarg_vars = map(function_argument_name, kwargs)
     all_args = [arg_vars; kwarg_vars]
@@ -101,8 +103,7 @@ macro unroll(fundef)
     # We walk over every expression in the function body, and replace the `@unroll`
     # loops with macros that will perform the actual unrolling (we use intermediate macros
     # for sanity)
-    new_body = [postwalk(process, bexpr) for bexpr in body]
-    expansion = :(begin $(new_body...) end)
+    expansion = postwalk(process, body)
     exp_fun = Symbol(fname, :_unrolled_expansion_)
     return esc(quote
         # The expansion function (for easy calling)
