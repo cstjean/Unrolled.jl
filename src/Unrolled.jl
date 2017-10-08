@@ -68,6 +68,7 @@ end
 macro unroll(fundef)
     # This macro will turn the function definition into a generated function.
     di = splitdef(fundef)
+    @assert !haskey(di, :params) "`@unroll` only supports parametric functions using `where ...` notation"
     fname = di[:name]
     args = di[:args]
     kwargs = get(di, :kwargs, [])
@@ -110,7 +111,7 @@ macro unroll(fundef)
         Base.@__doc__ function $exp_fun($(all_args...))
             $(Expr(:quote, expansion))
         end
-        @generated function $fname($(args...); $(kwargs...))
+        @generated function $fname($(args...); $(kwargs...)) where {$(di[:whereparams]...)}
             $exp_fun($(all_args...))
         end
         $Unrolled.expansion_funs[$fname] = $exp_fun
