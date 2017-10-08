@@ -76,3 +76,13 @@ const tupl = (1,2,3,4,5.0,6,7...)
 
 f(tupl) = @fixed_range(tupl[4:end-1])
 @test @inferred(f(tupl)) == (4, 5.0, 6)
+
+@unroll function summer(tup, t::Type{T}) where T
+    s = zero(T)
+    @unroll for x in tup
+        s += x
+    end
+    s
+end
+
+@test summer((1,2,3), Float64) === 6.0
