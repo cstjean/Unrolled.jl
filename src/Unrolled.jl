@@ -132,7 +132,7 @@ end
 @generated function unrolled_map(f, seq) 
     :(tuple($((:(f(seq[$i])) for i in 1:type_length(seq))...)))
 end
-@generated function unrolled_map(f, seq1, seq2)
+@generated function unrolled_map(f::F, seq1, seq2) where F
     @assert type_length(seq1) == type_length(seq2)
     :(tuple($((:(f(seq1[$i], seq2[$i])) for i in 1:type_length(seq1))...)))
 end
@@ -157,7 +157,7 @@ unrolled_union(tup1, tup2, tupn...) =
     unrolled_reduce(unrolled_union, tup1, (tup2, tupn...))
 """ `unrolled_in(obj, tup)` is like `in`. Beware that its return type is not
 always known - see #21322 """
-@unroll function unrolled_in(obj, tup)
+@inline @unroll function unrolled_in(obj, tup)
     @unroll for x in tup
         if obj == x
             return true
