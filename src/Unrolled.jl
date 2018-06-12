@@ -29,8 +29,9 @@ macro unroll_loop(niter_type::Type, loop)
             return esc(loop)
         else rethrow() end
     end
-    esc(:($Unrolled.@unroll_loop $niter for $var in $seq
-          $(loopbody...) end))
+    esc(:($Unrolled.@unroll_loop($niter, for $var in $seq
+          $(loopbody...,)
+          end)))
 end
 macro unroll_loop(niter::Int, loop)
     @assert(@capture(loop, for var_ in seq_ loopbody__ end),
@@ -44,7 +45,7 @@ macro unroll_loop(loop::Expr)
     esc(quote $([:(let $var = $i; $(loopbody...) end) for i in 1:niter]...) end)
 end
 
-type_length{T<:Tuple}(tup::Type{T}) = length(tup.parameters)
+type_length(tup::Type{T}) where {T<:Tuple} = length(tup.parameters)
 # Default fall-back
 type_length(typ::Type) = length(typ)
 

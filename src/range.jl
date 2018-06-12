@@ -7,10 +7,10 @@ struct FixedRange{A, B} end
 struct FixedEnd{N} end
 FixedEnd() = FixedEnd{0}()
 
-Unrolled.type_length{A, B}(::Type{FixedRange{A, B}}) = B - A + 1
-Base.length{A, B}(fr::FixedRange{A, B}) = B - A + 1
-Base.maximum{A, B}(fr::FixedRange{A, B}) = B::Int
-Base.minimum{A, B}(fr::FixedRange{A, B}) = A::Int
+Unrolled.type_length(::Type{FixedRange{A, B}}) where {A, B} = B - A + 1
+Base.length(fr::FixedRange{A, B}) where {A, B} = B - A + 1
+Base.maximum(fr::FixedRange{A, B}) where {A, B} = B::Int
+Base.minimum(fr::FixedRange{A, B}) where {A, B} = A::Int
 Base.getindex(fr::FixedRange, i::Int) = minimum(fr) + i - 1
 
 Base.start(fr::FixedRange) = minimum(fr)
@@ -18,10 +18,10 @@ Base.endof(fr::FixedRange) = length(fr)
 Base.done(fr::FixedRange, i::Int) = i > maximum(fr)
 Base.next(fr::FixedRange, i::Int) = (i, i+1)
 
-replace_end{N, SEQ}(::FixedEnd{N}, ::Type{SEQ}) = type_length(SEQ) - N
+replace_end(::FixedEnd{N}, ::Type{SEQ}) where {N, SEQ} = type_length(SEQ) - N
 replace_end(n::Int, ::Type) = n
 
-@generated Base.getindex{A, B}(seq, ::FixedRange{A, B}) =
+@generated Base.getindex(seq, ::FixedRange{A, B}) where {A, B} =
     :(tuple($((:(seq[$i]) for i in replace_end(A, seq):replace_end(B, seq))...)))
 
 """ `@fixed_range 3:10` behaves like the standard range `3:10`, but is stored within
