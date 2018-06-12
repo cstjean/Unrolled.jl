@@ -1,5 +1,5 @@
 using Unrolled
-using Base.Test
+using Test
 using StaticArrays
 using MacroTools
 using QuickTypes: type_parameters
