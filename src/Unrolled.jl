@@ -87,8 +87,10 @@ macro unroll(fundef)
                 "Can only unroll a loop over one of the function's arguments")
         return Expr(:($), Expr(:call, :($Unrolled.type_length), seq_var))
     end
-    function process(expr)
-        if @capture(expr, @unroll(what_))
+    process(x) = x
+    function process(expr::Expr)
+        if expr.args[1]==Symbol("@unroll")
+            what = expr.args[3]
             @match what begin
                 for var_ in 1:length(seq_) loopbody__ end =>
                     :($Unrolled.@unroll_loop(for $var in 1:$(seq_type_length(seq));
