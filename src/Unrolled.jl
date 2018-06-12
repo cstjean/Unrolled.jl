@@ -30,7 +30,7 @@ macro unroll_loop(niter_type::Type, loop)
         else rethrow() end
     end
     esc(:($Unrolled.@unroll_loop($niter, for $var in $seq
-          $(loopbody...,)
+          $(loopbody...)
           end)))
 end
 macro unroll_loop(niter::Int, loop)
