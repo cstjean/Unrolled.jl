@@ -18,7 +18,7 @@ include("range.jl")
 const expansion_funs = Dict{Function, Function}()
 
 macro unroll_loop(niter_type::Type, loop)
-    local niter   # necessary on 0.5
+    local niter
     @assert(@capture(loop, for var_ in seq_ loopbody__ end),
             "Internal error in @unroll_loop")
     try
