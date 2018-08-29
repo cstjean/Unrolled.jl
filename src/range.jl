@@ -13,10 +13,9 @@ Base.maximum(fr::FixedRange{A, B}) where {A, B} = B::Int
 Base.minimum(fr::FixedRange{A, B}) where {A, B} = A::Int
 Base.getindex(fr::FixedRange, i::Int) = minimum(fr) + i - 1
 
-Base.start(fr::FixedRange) = minimum(fr)
-Base.endof(fr::FixedRange) = length(fr)
-Base.done(fr::FixedRange, i::Int) = i > maximum(fr)
-Base.next(fr::FixedRange, i::Int) = (i, i+1)
+Base.iterate(fr::FixedRange, state=minimum(fr)) =
+    state > maximum(fr) ? nothing : (state, state+1)
+Base.lastindex(fr::FixedRange) = length(fr)
 
 replace_end(::FixedEnd{N}, ::Type{SEQ}) where {N, SEQ} = type_length(SEQ) - N
 replace_end(n::Int, ::Type) = n
