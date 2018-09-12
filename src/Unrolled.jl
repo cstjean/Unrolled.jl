@@ -6,7 +6,8 @@ using MacroTools: prewalk, postwalk
 
 export @unroll, @code_unrolled
 export unrolled_reduce, unrolled_filter, unrolled_intersect, unrolled_setdiff,
-       unrolled_union, unrolled_in, unrolled_any, unrolled_all, unrolled_map
+       unrolled_union, unrolled_in, unrolled_any, unrolled_all, unrolled_map,
+       unrolled_foreach
 
 function unrolled_filter end
 """ `type_length(::Type)` returns the length of sequences of that type (only makes sense
@@ -36,7 +37,10 @@ end
 macro unroll_loop(niter::Int, loop)
     @assert(@capture(loop, for var_ in seq_ loopbody__ end),
             "Internal error in @unroll_loop")
-    esc(quote $([:(let $var = $seq[$i]; $(loopbody...) end) for i in 1:niter]...) end)
+    esc(quote
+        $([:(let $var = $seq[$i]; $(loopbody...) end) for i in 1:niter]...)
+        nothing
+        end)
 end
 
 macro unroll_loop(loop::Expr)
@@ -138,6 +142,10 @@ end
 @generated function unrolled_map(f::F, seq1, seq2) where F
     @assert type_length(seq1) == type_length(seq2)
     :(tuple($((:(f(seq1[$i], seq2[$i])) for i in 1:type_length(seq1))...)))
+end
+
+@unroll function unrolled_foreach(f, seq)
+    @unroll for x in seq; f(x) end
 end
 
 @generated function unrolled_reduce(f, v0, seq) 
