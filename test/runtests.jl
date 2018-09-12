@@ -89,7 +89,7 @@ end
 @test summer((1,2,3), Float64) === 6.0
 
 x = [0.0]
-foreach((1,2,3, 1.0)) do y
+unrolled_foreach((1,2,3, 1.0)) do y
     x[1] += y
 end
 @test x[1] == 7.0
