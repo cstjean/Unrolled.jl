@@ -121,7 +121,7 @@ foo((:a, :b, :c))
 Unrolled.jl also provides the following unrolled functions, defined on `Tuple`s only.
 
 ```
-unrolled_map, unrolled_reduce, unrolled_in, unrolled_any, unrolled_all
+unrolled_map, unrolled_reduce, unrolled_in, unrolled_any, unrolled_all, unrolled_foreach
 ```
 
 and
