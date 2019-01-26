@@ -130,7 +130,7 @@ macro code_unrolled(expr)
     ar = gensym()
     esc(quote
         $ar = [$(args...)]
-        macroexpand($Unrolled.expansion_funs[$f](map(typeof, $ar)...))
+        macroexpand(@__MODULE__, $Unrolled.expansion_funs[$f](map(typeof, $ar)...))
     end)
 end
 
