@@ -106,3 +106,18 @@ end
     end
     return log_scale ? exp.(state) : state
 end
+
+# Unrolling with a sized argument
+struct CartesianIndexSpace{dims} <: AbstractArray{Int, 2}; end
+Base.size(cis::Type{CartesianIndexSpace{dims}}) where {dims} = dims
+Base.size(cis::Type{<:CartesianIndexSpace}, i::Integer) = size(cis)[i]
+Base.size(cis::CartesianIndexSpace) = size(typeof(cis))
+
+@unroll function do_count(cis)
+    n = 0
+    @unroll for i = 1:size(cis, 2)
+        n += 1
+    end
+    n
+end
+@test do_count(CartesianIndexSpace{(1,4)}()) == 4
