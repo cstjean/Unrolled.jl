@@ -25,7 +25,7 @@ replace_end(n::Int, ::Type) = n
 
 """ `@fixed_range 3:10` behaves like the standard range `3:10`, but is stored within
 the type system, so that `some_tuple[@fixed_range 3:10]` is type-stable. Also supports
-`@fixed_range some_tuple[3:end-5]` """
+`some_tuple[@fixed_range 3:end-5]` """
 macro fixed_range(r::Expr)
     process(x::Int) = x
     process(x::Symbol) = x === :end ? :($Unrolled.FixedEnd()) : x
