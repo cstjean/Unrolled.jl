@@ -93,3 +93,16 @@ unrolled_foreach((1,2,3, 1.0)) do y
     x[1] += y
 end
 @test x[1] == 7.0
+
+# Issue #6
+@unroll function sim_gbm(state, sim_T, drift, vol, ts::Tuple, ::Val{log_scale}) where log_scale
+    log_scale && (state = log.(state))
+    @unroll for _ in 1:length(ts)
+        if log_scale
+            state = sim_gbm_euler_step(state, drift, vol_matrix, dt(ts))
+        else
+            state = sim_gbm_log_scale_euler_step(state, drift, vol_matrix, dt(ts))
+        end
+    end
+    return log_scale ? exp.(state) : state
+end

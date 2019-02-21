@@ -57,18 +57,7 @@ type_length(typ::Type) = length(typ)
 
 Returns the name (as a symbol) of this argument, where arg_expr is whatever can
 be put in a function definition's argument list (eg. `len::Int=5`) """
-function function_argument_name(arg_expr)
-    if isa(arg_expr, Expr) && arg_expr.head == :kw
-        arg_expr = arg_expr.args[1]
-    end
-    if @capture(arg_expr, name_::type_)
-        name
-    else
-        name = arg_expr
-    end
-    @assert isa(name, Symbol) "Bad $name"
-    name
-end
+function_argument_name(arg_expr) = MacroTools.splitarg(arg_expr)[1]
 
 macro unroll(fundef)
     # This macro will turn the function definition into a generated function.
@@ -78,7 +67,7 @@ macro unroll(fundef)
     args = di[:args]
     kwargs = get(di, :kwargs, [])
     body = di[:body]
-    arg_vars = map(function_argument_name, args)
+    arg_vars = [a===nothing ? gensym() : a for a in map(function_argument_name, args)]
     kwarg_vars = map(function_argument_name, kwargs)
     all_args = [arg_vars; kwarg_vars]
     function seq_type(seq_var)
