@@ -118,7 +118,7 @@ macro unroll(fundef)
     # loops with macros that will perform the actual unrolling (we use intermediate macros
     # for sanity)
     expansion = postwalk(process, body)
-    exp_fun = Symbol(fname, :_unrolled_expansion_)
+    exp_fun = Symbol(fname, :_unrolled_expansion_, gensym()) # gensym to support multiple methods
     return esc(quote
         # The expansion function (for easy calling)
         Base.@__doc__ function $exp_fun($(all_args...))
