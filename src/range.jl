@@ -20,7 +20,9 @@ Base.lastindex(fr::FixedRange) = length(fr)
 replace_end(::FixedEnd{N}, ::Type{SEQ}) where {N, SEQ} = type_length(SEQ) - N
 replace_end(n::Int, ::Type) = n
 
-@generated Base.getindex(seq, ::FixedRange{A, B}) where {A, B} =
+Base.getindex(seq, fr::FixedRange{A, B}) where {A, B} = _getindex(seq, fr)::NTuple{B-A+1, etlype(seq)}
+
+@generated _getindex(seq, ::FixedRange{A, B}) where {A, B} =
     :(tuple($((:(seq[$i]) for i in replace_end(A, seq):replace_end(B, seq))...)))
 
 """ `@fixed_range 3:10` behaves like the standard range `3:10`, but is stored within
@@ -34,7 +36,7 @@ macro fixed_range(r::Expr)
         @assert en === :end
         :(FixedEnd{$m}())
     end
-    expand(a, b) = 
+    expand(a, b) =
         :($Unrolled.FixedRange{$(process(a)), $(process(b))}())
     @match r begin
         a_:b_ => esc(expand(a, b))
