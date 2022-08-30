@@ -20,8 +20,8 @@ Base.lastindex(fr::FixedRange) = length(fr)
 replace_end(::FixedEnd{N}, ::Type{SEQ}) where {N, SEQ} = type_length(SEQ) - N
 replace_end(n::Int, ::Type) = n
 
-Base.getindex(seq::NTuple{N, T}, fr::FixedRange{A, B}) where {N, A, B, T} = _getindex(seq, fr)::NTuple{B-A+1, T}
-Base.getindex(seq::AbstractArray{T}, fr::FixedRange{A, B}) where {T, A, B} = _getindex(seq, fr)::NTuple{B-A+1, T}
+Base.getindex(seq::NTuple{N, Any}, fr::FixedRange{A, B}) where {N, A, B} = _getindex(seq, fr)
+Base.getindex(seq::AbstractArray, fr::FixedRange{A, B}) where {A, B} = _getindex(seq, fr)
 
 @generated _getindex(seq, ::FixedRange{A, B}) where {A, B} =
     :(tuple($((:(seq[$i]) for i in replace_end(A, seq):replace_end(B, seq))...)))
