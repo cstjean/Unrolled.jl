@@ -6,7 +6,8 @@ version = "0.1.4"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 
 [compat]
-julia = "≥ 0.7.0"
+MacroTools = "0.5"
+julia = "1"
 
 [extras]
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
