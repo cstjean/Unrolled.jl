@@ -55,7 +55,7 @@ macro unroll_loop(loop::Expr)
     esc(quote $([:(let $var = $i; $(loopbody...) end) for i in 1:niter]...) end)
 end
 
-type_length(tup::Type{T}) where {T<:Tuple} = length(tup.parameters)
+type_length(tup::Type{T}) where {T<:Union{Tuple,NamedTuple}} = length(tup.types)
 # Default fall-back
 type_length(typ::Type) = length(typ)
 type_size(typ::Type, i) = size(typ, i)
