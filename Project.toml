@@ -1,6 +1,6 @@
 name = "Unrolled"
 uuid = "9602ed7d-8fef-5bc8-8597-8f21381861e8"
-version = "0.1.4"
+version = "0.1.5"
 
 [deps]
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
